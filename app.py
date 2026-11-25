@@ -26,11 +26,12 @@ Quando o usuário pedir uma ação (ex.: tocar música, abrir site/app, buscar a
 escreva uma resposta curta e adicione NO FINAL da resposta exatamente neste formato:
 [[CMD: {"acao": "tocar_musica" | "abrir_url" | "buscar_web", "query": "termo ou URL", "alvo": "youtube_music" | "youtube" | "spotify" | "navegador", "url": "URL_DIRETA_OPCIONAL"}]]
 
-Use "url" apenas se tiver uma URL direta de áudio/mídia conhecida; caso contrário, omita "url".
+Para "tocar_musica", coloque em "query" o nome da música e/ou artista (ex.: "Mac DeMarco Chamber Of Reflection").
 Não use [[CMD: ...]] em conversas normais.
 """
 
 historico = [{"role": "system", "content": SYSTEM_PROMPT.strip()}]
+CMD_REGEX = re.compile(r"\[\[CMD:\s*(\{.*?\})\s*\]\]", flags=re.DOTALL)
 
 
 def montar_mensagens():
@@ -40,7 +41,67 @@ def montar_mensagens():
 
 
 def limpar_cmd_do_historico(texto: str) -> str:
-    return re.sub(r"\[\[CMD:\s*\{.*?\}\s*\]\]", "", texto, flags=re.DOTALL).strip()
+    return CMD_REGEX.sub("", texto).strip()
+
+
+async def buscar_preview_audio(termo: str) -> str | None:
+    termo_limpo = (termo or "").strip()
+    if not termo_limpo:
+        return None
+
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            resp = await client.get(
+                "https://itunes.apple.com/search",
+                params={
+                    "term": termo_limpo,
+                    "media": "music",
+                    "entity": "song",
+                    "limit": 1,
+                },
+            )
+            resp.raise_for_status()
+            dados = resp.json()
+            resultados = dados.get("results") or []
+            if resultados:
+                preview_url = resultados[0].get("previewUrl")
+                if isinstance(preview_url, str) and preview_url.startswith(("http://", "https://")):
+                    return preview_url
+    except Exception as erro:
+        print(f"Aviso ao buscar prévia de áudio: {erro}")
+
+    return None
+
+
+async def enriquecer_comandos_no_texto(texto: str) -> str:
+    matches = list(CMD_REGEX.finditer(texto))
+    if not matches:
+        return texto
+
+    novo_texto = texto
+    for match in reversed(matches):
+        bloco_json_bruto = match.group(1)
+        try:
+            cmd = json.loads(bloco_json_bruto)
+        except Exception:
+            continue
+
+        if not isinstance(cmd, dict):
+            continue
+
+        acao = str(cmd.get("acao") or "").lower()
+        url_existente = cmd.get("url") or cmd.get("audio_url") or ""
+        query = str(cmd.get("query") or "").strip()
+
+        if acao == "tocar_musica" and not url_existente and query:
+            preview_url = await buscar_preview_audio(query)
+            if preview_url:
+                cmd["url"] = preview_url
+                cmd_substituido = f"[[CMD: {json.dumps(cmd, ensure_ascii=False)}]]"
+                inicio, fim = match.span()
+                novo_texto = novo_texto[:inicio] + cmd_substituido + novo_texto[fim:]
+
+    return novo_texto
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -68,6 +129,7 @@ async def chat(request: Request):
 
     async def gerar_stream():
         resposta_completa = []
+        buffer_enviado = 0
         headers = {
             "Authorization": f"Bearer {LLM_API_KEY}",
             "Content-Type": "application/json",
@@ -100,10 +162,21 @@ async def chat(request: Request):
                         parte = delta.get("content") or ""
                         if parte:
                             resposta_completa.append(parte)
-                            yield parte
+                            texto_acumulado = "".join(resposta_completa)
+                            # Segura o [[CMD: ...]] até o fim para poder injetar a "url" de prévia
+                            idx_cmd = texto_acumulado.find("[[CMD:")
+                            limite_seguro = len(texto_acumulado) if idx_cmd == -1 else idx_cmd
+                            if limite_seguro > buffer_enviado:
+                                yield texto_acumulado[buffer_enviado:limite_seguro]
+                                buffer_enviado = limite_seguro
+
             texto_final = "".join(resposta_completa).strip()
-            if texto_final:
-                historico.append({"role": "assistant", "content": limpar_cmd_do_historico(texto_final)})
+            texto_enriquecido = await enriquecer_comandos_no_texto(texto_final)
+            if len(texto_enriquecido) > buffer_enviado:
+                yield texto_enriquecido[buffer_enviado:]
+
+            if texto_enriquecido:
+                historico.append({"role": "assistant", "content": limpar_cmd_do_historico(texto_enriquecido)})
         except Exception as erro:
             yield f"\n[Erro: {erro}]"
 

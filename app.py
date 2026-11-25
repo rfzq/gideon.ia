@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -8,13 +8,14 @@ import httpx
 app = FastAPI(title="Gideon")
 templates = Jinja2Templates(directory="templates")
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
-MODELO = os.getenv("GIDEON_MODEL", "qwen3.5:4b")
+LLM_API_URL = os.getenv("LLM_API_URL", "https://openrouter.ai/api/v1/chat/completions")
+LLM_API_KEY = os.getenv("LLM_API_KEY", "")
+MODELO = os.getenv("GIDEON_MODEL", "openai/gpt-4o-mini")
 MAX_MENSAGENS_HISTORICO = 6
 
 SYSTEM_PROMPT = """
 És o Gideon, um assistente direto e prático.
-Foste criado e configurado pelo Rafa como um projeto local com FastAPI e Ollama.
+Foste criado e configurado pelo Rafa.
 Responde de forma curta e objetiva, salvo quando pedirem código ou detalhe.
 """
 
@@ -43,35 +44,44 @@ async def chat(request: Request):
     if not mensagem:
         return {"erro": "Mensagem vazia"}
 
+    if not LLM_API_KEY:
+        return {"erro": "LLM_API_KEY não configurada"}
+
     historico.append({"role": "user", "content": mensagem})
     mensagens_envio = montar_mensagens()
 
     async def gerar_stream():
         resposta_completa = []
+        headers = {
+            "Authorization": f"Bearer {LLM_API_KEY}",
+            "Content-Type": "application/json",
+        }
+        payload_req = {
+            "model": MODELO,
+            "messages": mensagens_envio,
+            "stream": True,
+            "max_tokens": 200,
+            "temperature": 0.5,
+        }
         try:
             async with httpx.AsyncClient(timeout=180.0) as client:
                 async with client.stream(
                     "POST",
-                    OLLAMA_URL,
-                    json={
-                        "model": MODELO,
-                        "messages": mensagens_envio,
-                        "stream": True,
-                        "think": False,
-                        "keep_alive": "30m",
-                        "options": {
-                            "num_ctx": 1024,
-                            "num_predict": 120,
-                            "temperature": 0.5,
-                        },
-                    },
+                    LLM_API_URL,
+                    headers=headers,
+                    json=payload_req,
                 ) as resp:
                     resp.raise_for_status()
                     async for linha in resp.aiter_lines():
                         if not linha:
                             continue
+                        if linha.startswith("data: "):
+                            linha = linha[6:].strip()
+                        if linha == "[DONE]":
+                            break
                         payload = json.loads(linha)
-                        parte = payload.get("message", {}).get("content", "")
+                        delta = payload.get("choices", [{}])[0].get("delta", {})
+                        parte = delta.get("content") or ""
                         if parte:
                             resposta_completa.append(parte)
                             yield parte
@@ -86,4 +96,3 @@ async def chat(request: Request):
         media_type="text/plain; charset=utf-8",
         headers={"X-Accel-Buffering": "no"},
     )
-

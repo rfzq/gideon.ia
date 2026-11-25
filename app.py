@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 import httpx
 
 app = FastAPI(title="Gideon")
+os.makedirs("static", exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 

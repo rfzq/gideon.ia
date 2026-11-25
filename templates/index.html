@@ -9,7 +9,9 @@
       --bg-main: #09090b;
       --bg-card: #121216;
       --border-color: #27272a;
-      --accent-color: #9d7ff5;
+      --accent-purple: #9d7ff5;
+      --accent-pink: #e879f9;
+      --accent-cyan: #22d3ee;
       --text-main: #f4f4f5;
       --text-muted: #a1a1aa;
     }
@@ -26,21 +28,54 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
+      overflow: hidden;
     }
 
     header {
-      padding: 16px 24px;
+      padding: 14px 24px;
       background: var(--bg-card);
       border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Mini esfera no cabeçalho */
+    .mini-orb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      position: relative;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), rgba(18,18,22,0.9));
+      box-shadow: 0 0 12px rgba(157, 127, 245, 0.6), inset 0 0 6px rgba(34, 211, 238, 0.8);
+      overflow: hidden;
+    }
+
+    .mini-orb::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      background: conic-gradient(from 0deg, var(--accent-purple), var(--accent-cyan), var(--accent-pink), var(--accent-purple));
+      animation: spin 3s linear infinite;
+      mix-blend-mode: screen;
+      filter: blur(2px);
+    }
+
+    .mini-orb.thinking::before {
+      animation: spin 0.7s linear infinite;
     }
 
     .logo {
       font-weight: 800;
-      font-size: 1.2rem;
-      color: var(--accent-color);
+      font-size: 1.15rem;
+      color: var(--accent-purple);
       letter-spacing: -0.5px;
     }
 
@@ -48,16 +83,137 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       color: var(--text-muted);
     }
 
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       background: #22c55e;
       border-radius: 50%;
       box-shadow: 0 0 8px #22c55e;
+    }
+
+    /* Tela de inicialização / Esfera central */
+    #boot-screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      z-index: 5;
+    }
+
+    #boot-screen.hidden {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+
+    .ai-orb {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.25), rgba(15, 12, 41, 0.95) 70%);
+      box-shadow:
+        0 0 40px rgba(157, 127, 245, 0.45),
+        0 0 80px rgba(34, 211, 238, 0.2),
+        inset 0 0 24px rgba(232, 121, 249, 0.6),
+        inset 0 -10px 25px rgba(34, 211, 238, 0.5);
+      animation: bootEntry 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards, floatOrb 4s ease-in-out infinite 0.9s;
+      overflow: hidden;
+    }
+
+    /* Ondas de energia internas */
+    .ai-orb .wave {
+      position: absolute;
+      width: 130%;
+      height: 130%;
+      border-radius: 42% 58% 63% 37% / 45% 42% 58% 55%;
+      mix-blend-mode: screen;
+      filter: blur(6px);
+      opacity: 0.85;
+    }
+
+    .ai-orb .wave-1 {
+      background: linear-gradient(135deg, var(--accent-pink), transparent 65%);
+      animation: spin 5s linear infinite;
+    }
+
+    .ai-orb .wave-2 {
+      background: linear-gradient(225deg, var(--accent-cyan), transparent 65%);
+      animation: spinReverse 4s linear infinite;
+    }
+
+    .ai-orb .wave-3 {
+      background: radial-gradient(circle, #ffffff 0%, var(--accent-purple) 35%, transparent 70%);
+      width: 85%;
+      height: 85%;
+      animation: pulseCore 2.5s ease-in-out infinite;
+    }
+
+    /* Reflexo de vidro da esfera */
+    .ai-orb::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      border-radius: 50%;
+      border-top: 1.5px solid rgba(255, 255, 255, 0.55);
+      border-bottom: 1px solid rgba(34, 211, 238, 0.35);
+      pointer-events: none;
+    }
+
+    .boot-label {
+      margin-top: 24px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      animation: fadeText 1.2s ease forwards;
+    }
+
+    .boot-label span {
+      color: var(--accent-purple);
+      font-weight: 700;
+    }
+
+    @keyframes bootEntry {
+      0% { transform: scale(0.2); opacity: 0; filter: blur(12px); }
+      100% { transform: scale(1); opacity: 1; filter: blur(0); }
+    }
+
+    @keyframes floatOrb {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-8px) scale(1.03); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes spinReverse {
+      0% { transform: rotate(360deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    @keyframes pulseCore {
+      0%, 100% { transform: scale(0.85); opacity: 0.7; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+
+    @keyframes fadeText {
+      0% { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
 
     #chat {
@@ -67,21 +223,23 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
+      z-index: 6;
     }
 
     .msg {
       max-width: 80%;
       padding: 14px 18px;
-      border-radius: 12px;
+      border-radius: 14px;
       line-height: 1.5;
       white-space: pre-wrap;
       font-size: 0.95rem;
+      animation: fadeText 0.25s ease forwards;
     }
 
     .user {
       align-self: flex-end;
-      background: var(--accent-color);
-      color: #000;
+      background: var(--accent-purple);
+      color: #09090b;
       font-weight: 500;
       border-bottom-right-radius: 2px;
     }
@@ -100,50 +258,70 @@
       padding: 16px;
       background: var(--bg-card);
       border-top: 1px solid var(--border-color);
+      z-index: 10;
     }
 
     input {
       flex: 1;
-      padding: 12px 16px;
+      padding: 12px 18px;
       border-radius: 9999px;
       border: 1px solid var(--border-color);
       background: var(--bg-main);
       color: var(--text-main);
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     input:focus {
-      border-color: var(--accent-color);
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 2px rgba(157, 127, 245, 0.15);
     }
 
     button {
       padding: 12px 24px;
       border: none;
       border-radius: 9999px;
-      background: var(--accent-color);
-      color: #000;
+      background: var(--accent-purple);
+      color: #09090b;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, transform 0.1s;
     }
 
     button:hover {
       opacity: 0.9;
     }
+
+    button:active {
+      transform: scale(0.97);
+    }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">gideon.ia</div>
+    <div class="brand">
+      <div class="mini-orb" id="mini-orb"></div>
+      <div class="logo">gideon.ia</div>
+    </div>
     <div class="status">
       <div class="status-dot"></div>
-      online
+      SYS.ONLINE
     </div>
   </header>
+
+  <div id="boot-screen">
+    <div class="ai-orb">
+      <div class="wave wave-1"></div>
+      <div class="wave wave-2"></div>
+      <div class="wave wave-3"></div>
+    </div>
+    <div class="boot-label"><span>gideon.ia</span> // pronto</div>
+  </div>
+
   <div id="chat"></div>
+
   <form id="form">
-    <input id="input" type="text" placeholder="Pergunta algo ao Gideon..." autocomplete="off" required />
+    <input id="input" type="text" placeholder="Envie um comando para o Gideon..." autocomplete="off" required />
     <button type="submit">Enviar</button>
   </form>
 
@@ -151,6 +329,8 @@
     const chat = document.getElementById('chat');
     const form = document.getElementById('form');
     const input = document.getElementById('input');
+    const bootScreen = document.getElementById('boot-screen');
+    const miniOrb = document.getElementById('mini-orb');
 
     function addMsg(text, cls) {
       const div = document.createElement('div');
@@ -165,10 +345,17 @@
       e.preventDefault();
       const text = input.value.trim();
       if (!text) return;
+
+      // Esconde a esfera central na primeira mensagem
+      if (!bootScreen.classList.contains('hidden')) {
+        bootScreen.classList.add('hidden');
+      }
+
       addMsg(text, 'user');
       input.value = '';
 
       const botDiv = addMsg('...', 'bot');
+      miniOrb.classList.add('thinking');
 
       try {
         const res = await fetch('/chat', {
@@ -189,6 +376,8 @@
         }
       } catch (err) {
         botDiv.textContent = 'Erro ao contactar o servidor.';
+      } finally {
+        miniOrb.classList.remove('thinking');
       }
     });
   </script>

@@ -1,677 +1,9 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GIDEON.IA // Painel</title>
-    <style>
-        :root {
-            --bg-dark: #07070b;
-            --glass-bg: rgba(20, 21, 32, 0.90);
-            --glass-card: rgba(28, 25, 48, 0.72);
-            --glass-user: rgba(45, 38, 82, 0.78);
-            --glass-border: rgba(155, 135, 255, 0.22);
-            --accent-purple: #8b75ff;
-            --text-main: #ffffff;
-            --text-muted: #9ca2bc;
-            --status-green: #38e57d;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-dark);
-            background-image:
-                radial-gradient(circle at 50% 22%, rgba(92, 71, 204, 0.22) 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, rgba(65, 45, 140, 0.16) 0%, transparent 50%);
-            color: var(--text-main);
-            height: 100dvh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Cabeçalho Mobile */
-        .mobile-header {
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 16px 0;
-            z-index: 20;
-            flex-shrink: 0;
-        }
-
-        .menu-toggle-btn {
-            background: rgba(25, 27, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            color: var(--text-main);
-            padding: 7px 12px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .header-badge {
-            font-size: 11px;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(4px);
-            z-index: 90;
-        }
-        .sidebar-overlay.active {
-            display: block;
-        }
-
-        /* Layout Principal */
-        .app-container {
-            display: flex;
-            flex: 1;
-            padding: 12px 16px 6px;
-            gap: 20px;
-            min-height: 0;
-            position: relative;
-        }
-
-        /* Gaveta / Painel Lateral */
-        .sidebar {
-            width: 260px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 20px;
-            padding: 20px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            overflow-y: auto;
-            z-index: 100;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
-            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-            flex-shrink: 0;
-        }
-
-        .sidebar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
-        }
-
-        .brand {
-            text-align: center;
-            padding-bottom: 6px;
-            position: relative;
-        }
-        .close-sidebar-btn {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: -4px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 22px;
-            cursor: pointer;
-        }
-        .brand-dots {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 6px;
-        }
-        .dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #8b75ff;
-            box-shadow: 0 0 8px #8b75ff;
-        }
-        .dot:nth-child(2) {
-            width: 9px;
-            height: 9px;
-            background: #6ea8ff;
-            box-shadow: 0 0 10px #6ea8ff;
-        }
-        .dot:nth-child(3) {
-            background: #a594ff;
-        }
-        .brand h1 {
-            font-size: 12px;
-            letter-spacing: 2px;
-            font-weight: 700;
-        }
-        .brand span {
-            font-size: 11px;
-            letter-spacing: 1.5px;
-            color: var(--text-muted);
-            display: block;
-            margin-top: 2px;
-        }
-
-        .section-title {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 1.2px;
-            color: var(--text-main);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .quick-commands {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .cmd-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid transparent;
-            color: var(--text-main);
-            padding: 9px 12px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
-        }
-        .cmd-btn:hover {
-            background: rgba(139, 117, 255, 0.18);
-            border-color: rgba(139, 117, 255, 0.35);
-        }
-        .cmd-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-            opacity: 0.9;
-        }
-
-        .status-box {
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            color: var(--text-muted);
-            word-break: break-word;
-        }
-        .status-online {
-            color: var(--status-green);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            background-color: var(--status-green);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--status-green);
-        }
-
-        .controls-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: auto;
-        }
-        .control-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 12px;
-            border-radius: 16px;
-            font-size: 12px;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 34px;
-            height: 18px;
-            flex-shrink: 0;
-        }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255, 255, 255, 0.15);
-            transition: .3s;
-            border-radius: 20px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 14px;
-            width: 14px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: var(--accent-purple);
-        }
-        input:checked + .slider:before {
-            transform: translateX(16px);
-        }
-
-        /* Área Principal de Conversa */
-        .main-stage {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            max-width: 720px;
-            margin: 0 auto;
-            width: 100%;
-            min-height: 0;
-        }
-
-        /* Topo com Esfera Compacta e Barra de Status */
-        .top-core-bar {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 0 12px;
-            flex-shrink: 0;
-        }
-
-        .energy-orb {
-            width: 68px;
-            height: 68px;
-            border-radius: 50%;
-            position: relative;
-            background: radial-gradient(circle at 35% 35%,
-                rgba(255, 255, 255, 0.92) 0%,
-                rgba(167, 139, 250, 0.85) 25%,
-                rgba(99, 102, 241, 0.55) 55%,
-                rgba(25, 22, 65, 0.95) 100%);
-            box-shadow:
-                0 0 24px rgba(139, 117, 255, 0.55),
-                0 0 48px rgba(79, 138, 255, 0.25),
-                inset 0 0 12px rgba(255, 255, 255, 0.65);
-            animation: floatOrb 5s ease-in-out infinite;
-            overflow: hidden;
-        }
-
-        .energy-orb::before, .energy-orb::after {
-            content: "";
-            position: absolute;
-            inset: -20%;
-            border-radius: 45%;
-            background: conic-gradient(from 0deg, transparent, rgba(139, 117, 255, 0.65), rgba(96, 165, 250, 0.7), transparent);
-            animation: spinWave 7s linear infinite;
-            mix-blend-mode: screen;
-        }
-        .energy-orb::after {
-            animation: spinWave 10s linear infinite reverse;
-            background: conic-gradient(from 180deg, transparent, rgba(232, 121, 249, 0.5), rgba(56, 189, 248, 0.6), transparent);
-        }
-
-        .energy-orb.thinking {
-            animation: pulseFast 1.1s ease-in-out infinite;
-            box-shadow:
-                0 0 36px rgba(139, 117, 255, 0.9),
-                0 0 65px rgba(79, 138, 255, 0.65),
-                inset 0 0 18px rgba(255, 255, 255, 0.9);
-        }
-
-        .status-pill {
-            font-size: 11px;
-            letter-spacing: 0.6px;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .status-pill strong {
-            color: var(--text-main);
-            letter-spacing: 1.2px;
-            font-weight: 700;
-        }
-
-        .status-pill .online-txt {
-            color: var(--status-green);
-            font-weight: 600;
-        }
-
-        /* Feed de Mensagens */
-        .chat-feed {
-            flex: 1;
-            width: 100%;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            padding: 4px 4px 14px;
-            scroll-behavior: smooth;
-        }
-
-        .chat-feed::-webkit-scrollbar {
-            width: 4px;
-        }
-        .chat-feed::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.14);
-            border-radius: 4px;
-        }
-
-        .msg-row {
-            display: flex;
-            width: 100%;
-        }
-
-        .msg-row.user {
-            justify-content: flex-end;
-        }
-
-        .msg-row.assistant {
-            justify-content: flex-start;
-        }
-
-        .bubble {
-            max-width: 84%;
-            border-radius: 18px;
-            padding: 14px 18px;
-            font-size: 15px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-break: break-word;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-        }
-
-        .bubble.user-bubble {
-            background: var(--glass-user);
-            border: 1px solid rgba(155, 135, 255, 0.35);
-            color: var(--text-main);
-            border-bottom-right-radius: 6px;
-        }
-
-        .bubble.assistant-bubble {
-            background: var(--glass-card);
-            border: 1px solid var(--glass-border);
-            color: #eef0fa;
-            border-bottom-left-radius: 6px;
-            display: flex;
-            align-items: flex-start;
-            gap: 11px;
-        }
-
-        .mini-orb {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            flex-shrink: 0;
-            margin-top: 2px;
-            background: radial-gradient(circle at 35% 35%,
-                #ffffff 0%,
-                #a78bfa 40%,
-                #4f46e5 85%,
-                #1e1b4b 100%);
-            box-shadow: 0 0 12px rgba(139, 117, 255, 0.7);
-        }
-
-        .assistant-text {
-            flex: 1;
-            min-width: 0;
-        }
-
-        /* Barra Inferior de Input */
-        .input-bar-container {
-            padding: 6px 16px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .input-form {
-            width: 100%;
-            max-width: 720px;
-            background: rgba(24, 24, 38, 0.78);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 30px;
-            padding: 6px 8px 6px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-        }
-
-        .mic-icon {
-            color: var(--text-muted);
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-        }
-
-        .input-form input {
-            flex: 1;
-            min-width: 0;
-            background: transparent;
-            border: none;
-            outline: none;
-            color: var(--text-main);
-            font-size: 15px;
-        }
-        .input-form input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .send-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, #9b87ff, #6b5ce7);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        @keyframes spinWave {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.08); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
-        @keyframes floatOrb {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-4px); }
-        }
-        @keyframes pulseFast {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.09); }
-        }
-
-        @media (max-width: 768px) {
-            .mobile-header {
-                display: flex;
-            }
-            .app-container {
-                padding: 8px 12px 4px;
-            }
-            .sidebar {
-                position: fixed;
-                top: 12px;
-                bottom: 12px;
-                left: 12px;
-                width: 270px;
-                transform: translateX(-115%);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .close-sidebar-btn {
-                display: block;
-            }
-            .bubble {
-                max-width: 90%;
-                font-size: 14px;
-                padding: 12px 15px;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <header class="mobile-header">
-        <button class="menu-toggle-btn" onclick="toggleSidebar()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="12" x2="15" y2="12"></line>
-                <line x1="3" y1="18" x2="18" y2="18"></line>
-            </svg>
-            Painel
-        </button>
-        <span class="header-badge">GIDEON.IA</span>
-    </header>
-
-    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
-
-    <div class="app-container">
-        <aside class="sidebar" id="sidebar">
-            <div class="brand">
-                <button class="close-sidebar-btn" onclick="toggleSidebar()">×</button>
-                <div class="brand-dots">
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                </div>
-                <h1>GIDEON.IA</h1>
-                <span>PAINEL</span>
-            </div>
-
-            <div>
-                <div class="section-title">Comandos Rápidos</div>
-                <div class="quick-commands">
-                    <button class="cmd-btn" onclick="enviarComandoRapido('Executar diagnóstico completo do sistema')">
-                        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                        Diagnóstico
-                    </button>
-                    <button class="cmd-btn" onclick="resetarSessao()">
-                        <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-                        Resetar
-                    </button>
-                    <button class="cmd-btn" onclick="enviarComandoRapido('Faz um resumo da nossa conversa')">
-                        <svg viewBox="0 0 24 24"><path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5z"/></svg>
-                        Resumo
-                    </button>
-                    <button class="cmd-btn" onclick="enviarComandoRapido('Traduz a última resposta para Inglês')">
-                        <svg viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
-                        Traduzir
-                    </button>
-                </div>
-            </div>
-
-            <div>
-                <div class="section-title">Status</div>
-                <div class="status-box">
-                    <div class="status-online"><span class="status-dot"></span> Online</div>
-                    <div id="latency-sidebar">Latência: --</div>
-                    <div>Modelo: {{ modelo | default("openai/gpt-4o-mini") }}</div>
-                </div>
-            </div>
-
-            <div class="controls-list">
-                <div class="section-title" style="margin-bottom: 2px;">Controles</div>
-                <div class="control-row">
-                    <span>Modo Silencioso</span>
-                    <label class="switch">
-                        <input type="checkbox" id="silent-mode" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="control-row">
-                    <span>Notificações</span>
-                    <label class="switch">
-                        <input type="checkbox" id="notifications-mode">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-        </aside>
-
-        <main class="main-stage">
-            <div class="top-core-bar">
-                <div class="energy-orb" id="orb"></div>
-                <div class="status-pill" id="status-pill">
-                    <strong>GIDEON.IA</strong>
-                    <span>•</span>
-                    <span class="online-txt" id="state-label">Online</span>
-                    <span>•</span>
-                    <span>Modelo: {{ modelo | default("openai/gpt-4o-mini") }}</span>
-                </div>
-            </div>
-
-            <div class="chat-feed" id="chat-feed">
-                <div class="msg-row assistant">
-                    <div class="bubble assistant-bubble">
-                        <div class="mini-orb"></div>
-                        <div class="assistant-text">Oi! O que você precisa?</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <div class="input-bar-container">
-        <form class="input-form" id="chat-form" onsubmit="enviarMensagem(event)">
-            <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>
-            </svg>
-            <input type="text" id="user-input" placeholder="Envie um comando para o Gideon..." autocomplete="off" required>
-            <button type="submit" class="send-btn" title="Enviar">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-            </button>
-        </form>
-    </div>
-
-    <script>
+<script>
         const orb = document.getElementById('orb');
-        const stateLabel = document.getElementById('state-label');
-        const chatFeed = document.getElementById('chat-feed');
+        const statusLabel = document.getElementById('status-label');
+        const responseBox = document.getElementById('ai-response');
         const userInput = document.getElementById('user-input');
-        const latencySidebar = document.getElementById('latency-sidebar');
+        const latencyDisplay = document.getElementById('latency-display');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
 
@@ -690,51 +22,11 @@
         function setEstado(pensando) {
             if (pensando) {
                 orb.classList.add('thinking');
-                stateLabel.textContent = 'Processando...';
+                statusLabel.innerHTML = 'GIDEON.IA <span>// PROCESSANDO...</span>';
             } else {
                 orb.classList.remove('thinking');
-                stateLabel.textContent = 'Online';
+                statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
             }
-        }
-
-        function rolarParaBaixo() {
-            chatFeed.scrollTop = chatFeed.scrollHeight;
-        }
-
-        function adicionarMensagemUsuario(texto) {
-            const row = document.createElement('div');
-            row.className = 'msg-row user';
-
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble user-bubble';
-            bubble.textContent = texto;
-
-            row.appendChild(bubble);
-            chatFeed.appendChild(row);
-            rolarParaBaixo();
-        }
-
-        function criarBolhaAssistente() {
-            const row = document.createElement('div');
-            row.className = 'msg-row assistant';
-
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble assistant-bubble';
-
-            const miniOrb = document.createElement('div');
-            miniOrb.className = 'mini-orb';
-
-            const textEl = document.createElement('div');
-            textEl.className = 'assistant-text';
-            textEl.textContent = '...';
-
-            bubble.appendChild(miniOrb);
-            bubble.appendChild(textEl);
-            row.appendChild(bubble);
-            chatFeed.appendChild(row);
-            rolarParaBaixo();
-
-            return textEl;
         }
 
         async function processarEnvio(mensagem) {
@@ -742,12 +34,15 @@
 
             fecharSidebarMobile();
             setEstado(true);
-            adicionarMensagemUsuario(mensagem);
-            const targetText = criarBolhaAssistente();
+
+            responseBox.innerHTML = `
+                <div style="color: #9499b0; font-size: 12px; margin-bottom: 6px;">Você: ${mensagem}</div>
+                <div id="gideon-stream-text"></div>
+            `;
+            const streamTarget = document.getElementById('gideon-stream-text');
 
             const inicio = performance.now();
             let primeiroChunk = true;
-            let limpouPlaceholder = false;
 
             try {
                 const resposta = await fetch('/chat', {
@@ -757,16 +52,15 @@
                 });
 
                 if (!resposta.ok) {
-                    targetText.textContent = `Erro HTTP ${resposta.status} ao falar com o servidor.`;
+                    streamTarget.textContent = `Erro HTTP ${resposta.status} ao falar com o servidor.`;
                     return;
                 }
 
                 const contentType = resposta.headers.get('content-type') || '';
                 if (contentType.includes('application/json')) {
                     const dados = await resposta.json();
-                    latencySidebar.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
-                    targetText.textContent = dados.erro || dados.resposta || dados.response || "Resposta recebida.";
-                    rolarParaBaixo();
+                    latencyDisplay.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
+                    streamTarget.textContent = dados.erro || dados.resposta || dados.response || "Resposta recebida.";
                     return;
                 }
 
@@ -778,28 +72,22 @@
                     if (done) break;
 
                     if (primeiroChunk) {
-                        latencySidebar.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
+                        latencyDisplay.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
                         primeiroChunk = false;
                     }
 
-                    if (!limpouPlaceholder) {
-                        targetText.textContent = "";
-                        limpouPlaceholder = true;
-                    }
-
-                    targetText.textContent += decoder.decode(value, { stream: true });
-                    rolarParaBaixo();
+                    streamTarget.textContent += decoder.decode(value, { stream: true });
+                    responseBox.scrollTop = responseBox.scrollHeight;
                 }
 
-                if (!targetText.textContent.trim()) {
-                    targetText.textContent = "Sem conteúdo retornado pelo modelo.";
+                if (!streamTarget.textContent.trim()) {
+                    streamTarget.textContent = "Sem conteúdo retornado pelo modelo.";
                 }
             } catch (erro) {
                 console.error(erro);
-                targetText.textContent = "Não foi possível conectar ao backend.";
+                streamTarget.textContent = "Não foi possível conectar ao backend.";
             } finally {
                 setEstado(false);
-                rolarParaBaixo();
             }
         }
 
@@ -816,10 +104,8 @@
 
         function resetarSessao() {
             fecharSidebarMobile();
-            chatFeed.innerHTML = '';
-            const targetText = criarBolhaAssistente();
-            targetText.textContent = "Conversa limpa. O que você precisa?";
-            setEstado(false);
+            responseBox.textContent = "Tela limpa. Pronto para um novo comando.";
+            statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
         }
     </script>
 </body>

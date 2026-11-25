@@ -576,7 +576,7 @@
         </form>
     </div>
 
-    <script>
+  <script>
         const orb = document.getElementById('orb');
         const statusLabel = document.getElementById('status-label');
         const responseBox = document.getElementById('ai-response');
@@ -612,7 +612,13 @@
 
             fecharSidebarMobile();
             setEstado(true);
-            responseBox.textContent = "";
+
+            responseBox.innerHTML = `
+                <div style="color: #9499b0; font-size: 12px; margin-bottom: 6px;">Você: ${mensagem}</div>
+                <div id="gideon-stream-text"></div>
+            `;
+            const streamTarget = document.getElementById('gideon-stream-text');
+
             const inicio = performance.now();
             let primeiroChunk = true;
 
@@ -624,7 +630,7 @@
                 });
 
                 if (!resposta.ok) {
-                    responseBox.textContent = `Erro HTTP ${resposta.status} ao falar com o servidor.`;
+                    streamTarget.textContent = `Erro HTTP ${resposta.status} ao falar com o servidor.`;
                     return;
                 }
 
@@ -632,7 +638,7 @@
                 if (contentType.includes('application/json')) {
                     const dados = await resposta.json();
                     latencyDisplay.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
-                    responseBox.textContent = dados.erro || dados.resposta || dados.response || "Resposta recebida.";
+                    streamTarget.textContent = dados.erro || dados.resposta || dados.response || "Resposta recebida.";
                     return;
                 }
 
@@ -648,16 +654,16 @@
                         primeiroChunk = false;
                     }
 
-                    responseBox.textContent += decoder.decode(value, { stream: true });
+                    streamTarget.textContent += decoder.decode(value, { stream: true });
                     responseBox.scrollTop = responseBox.scrollHeight;
                 }
 
-                if (!responseBox.textContent.trim()) {
-                    responseBox.textContent = "Sem conteúdo retornado pelo modelo.";
+                if (!streamTarget.textContent.trim()) {
+                    streamTarget.textContent = "Sem conteúdo retornado pelo modelo.";
                 }
             } catch (erro) {
                 console.error(erro);
-                responseBox.textContent = "Não foi possível conectar ao backend.";
+                streamTarget.textContent = "Não foi possível conectar ao backend.";
             } finally {
                 setEstado(false);
             }

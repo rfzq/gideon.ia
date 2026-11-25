@@ -8,24 +8,28 @@
         const overlay = document.getElementById('overlay');
 
         function toggleSidebar() {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
+            sidebar?.classList.toggle('open');
+            overlay?.classList.toggle('active');
         }
 
         function fecharSidebarMobile() {
             if (window.innerWidth <= 768) {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('active');
+                sidebar?.classList.remove('open');
+                overlay?.classList.remove('active');
             }
         }
 
         function setEstado(pensando) {
             if (pensando) {
-                orb.classList.add('thinking');
-                statusLabel.innerHTML = 'GIDEON.IA <span>// PROCESSANDO...</span>';
+                orb?.classList.add('thinking');
+                if (statusLabel) {
+                    statusLabel.innerHTML = 'GIDEON.IA <span>// PROCESSANDO...</span>';
+                }
             } else {
-                orb.classList.remove('thinking');
-                statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
+                orb?.classList.remove('thinking');
+                if (statusLabel) {
+                    statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
+                }
             }
         }
 
@@ -35,10 +39,12 @@
             fecharSidebarMobile();
             setEstado(true);
 
-            responseBox.innerHTML = `
-                <div style="color: #9499b0; font-size: 12px; margin-bottom: 6px;">Você: ${mensagem}</div>
-                <div id="gideon-stream-text"></div>
-            `;
+            if (responseBox) {
+                responseBox.innerHTML = `
+                    <div style="color: #9499b0; font-size: 12px; margin-bottom: 6px;">Você: ${mensagem}</div>
+                    <div id="gideon-stream-text"></div>
+                `;
+            }
             const streamTarget = document.getElementById('gideon-stream-text');
 
             const inicio = performance.now();
@@ -52,15 +58,21 @@
                 });
 
                 if (!resposta.ok) {
-                    streamTarget.textContent = `Erro HTTP ${resposta.status} ao falar com o servidor.`;
+                    if (streamTarget) {
+                        streamTarget.textContent = `Erro HTTP ${resposta.status} ao falar com o servidor.`;
+                    }
                     return;
                 }
 
                 const contentType = resposta.headers.get('content-type') || '';
                 if (contentType.includes('application/json')) {
                     const dados = await resposta.json();
-                    latencyDisplay.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
-                    streamTarget.textContent = dados.erro || dados.resposta || dados.response || "Resposta recebida.";
+                    if (latencyDisplay) {
+                        latencyDisplay.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
+                    }
+                    if (streamTarget) {
+                        streamTarget.textContent = dados.erro || dados.resposta || dados.response || "Resposta recebida.";
+                    }
                     return;
                 }
 
@@ -72,20 +84,28 @@
                     if (done) break;
 
                     if (primeiroChunk) {
-                        latencyDisplay.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
+                        if (latencyDisplay) {
+                            latencyDisplay.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
+                        }
                         primeiroChunk = false;
                     }
 
-                    streamTarget.textContent += decoder.decode(value, { stream: true });
-                    responseBox.scrollTop = responseBox.scrollHeight;
+                    if (streamTarget) {
+                        streamTarget.textContent += decoder.decode(value, { stream: true });
+                    }
+                    if (responseBox) {
+                        responseBox.scrollTop = responseBox.scrollHeight;
+                    }
                 }
 
-                if (!streamTarget.textContent.trim()) {
+                if (streamTarget && !streamTarget.textContent.trim()) {
                     streamTarget.textContent = "Sem conteúdo retornado pelo modelo.";
                 }
             } catch (erro) {
                 console.error(erro);
-                streamTarget.textContent = "Não foi possível conectar ao backend.";
+                if (streamTarget) {
+                    streamTarget.textContent = "Não foi possível conectar ao backend.";
+                }
             } finally {
                 setEstado(false);
             }
@@ -93,6 +113,7 @@
 
         function enviarMensagem(e) {
             e.preventDefault();
+            if (!userInput) return;
             const texto = userInput.value;
             userInput.value = '';
             processarEnvio(texto);
@@ -104,8 +125,12 @@
 
         function resetarSessao() {
             fecharSidebarMobile();
-            responseBox.textContent = "Tela limpa. Pronto para um novo comando.";
-            statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
+            if (responseBox) {
+                responseBox.textContent = "Tela limpa. Pronto para um novo comando.";
+            }
+            if (statusLabel) {
+                statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
+            }
         }
     </script>
 </body>

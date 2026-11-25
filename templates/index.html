@@ -30,112 +30,10 @@
                 radial-gradient(circle at 50% 22%, rgba(92, 71, 204, 0.22) 0%, transparent 50%),
                 radial-gradient(circle at 75% 75%, rgba(65, 45, 140, 0.16) 0%, transparent 50%);
             color: var(--text-main);
-            min-height: 100dvh;
+            height: 100dvh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-        }
-
-        /* Tela de Intro */
-        .intro-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: var(--bg-dark);
-            background-image:
-                radial-gradient(circle at 50% 35%, rgba(168, 85, 247, 0.22) 0%, transparent 55%),
-                radial-gradient(circle at 50% 70%, rgba(14, 165, 233, 0.14) 0%, transparent 55%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            padding: 24px 16px;
-            z-index: 300;
-            transition: opacity 0.35s ease, visibility 0.35s ease;
-        }
-
-        .intro-overlay.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .intro-title {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-align: center;
-            color: var(--text-main);
-        }
-
-        .orbe-css {
-            width: 170px;
-            height: 170px;
-            border-radius: 50%;
-            margin: 0 auto;
-            background: radial-gradient(circle at 35% 35%, #ffffff, #f0abfc 20%, #a855f7 40%, #6366f1 60%, #0ea5e9 80%, #1e1b4b);
-            box-shadow: 0 0 40px #e879f9, 0 0 80px #22d3ee;
-            animation: orbBreath 3.2s ease-in-out infinite;
-        }
-
-        .orbe-css.batendo {
-            animation: tumTum 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            box-shadow: 0 0 55px #e879f9, 0 0 110px #22d3ee;
-        }
-
-        .intro-hint {
-            font-size: 12px;
-            color: var(--text-muted);
-            letter-spacing: 0.8px;
-            text-align: center;
-        }
-
-        .start-gideon-btn {
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(14, 165, 233, 0.28));
-            border: 1px solid rgba(240, 171, 252, 0.55);
-            color: var(--text-main);
-            padding: 13px 28px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 700;
-            letter-spacing: 1.8px;
-            cursor: pointer;
-            box-shadow: 0 8px 28px rgba(168, 85, 247, 0.35);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .start-gideon-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 34px rgba(34, 211, 238, 0.4);
-        }
-
-        @keyframes orbBreath {
-            0%, 100% {
-                transform: scale(0.98);
-            }
-            50% {
-                transform: scale(1.03);
-            }
-        }
-
-        @keyframes tumTum {
-            0% {
-                transform: scale(1);
-            }
-            20% {
-                transform: scale(1.14);
-            }
-            36% {
-                transform: scale(0.96);
-            }
-            56% {
-                transform: scale(1.11);
-            }
-            76% {
-                transform: scale(0.99);
-            }
-            100% {
-                transform: scale(1.04);
-            }
         }
 
         /* Cabeçalho Mobile */
@@ -580,13 +478,6 @@
 </head>
 <body>
 
-    <div class="intro-overlay" id="intro-overlay">
-        <div class="intro-title">GIDEON.IA</div>
-        <div class="orbe-css" id="intro-orbe"></div>
-        <div class="intro-hint">Toque para iniciar</div>
-        <button type="button" class="start-gideon-btn" id="start-gideon-btn" onclick="iniciarGideon()">INICIAR GIDEON</button>
-    </div>
-
     <header class="mobile-header">
         <button class="menu-toggle-btn" onclick="toggleSidebar()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -700,30 +591,12 @@
     </div>
 
     <script>
-        const introOverlay = document.getElementById('intro-overlay');
-        const introOrbe = document.getElementById('intro-orbe');
-        const startGideonBtn = document.getElementById('start-gideon-btn');
         const stateLabel = document.getElementById('state-label');
         const chatFeed = document.getElementById('chat-feed');
         const userInput = document.getElementById('user-input');
         const latencySidebar = document.getElementById('latency-sidebar');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
-
-        function iniciarGideon() {
-            if (startGideonBtn) {
-                startGideonBtn.disabled = true;
-            }
-            if (introOrbe) {
-                introOrbe.classList.add('batendo');
-            }
-            setTimeout(() => {
-                if (introOverlay) {
-                    introOverlay.classList.add('hidden');
-                }
-                setTimeout(() => userInput.focus(), 180);
-            }, 950);
-        }
 
         function toggleSidebar() {
             sidebar.classList.toggle('open');

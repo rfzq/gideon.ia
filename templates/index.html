@@ -35,7 +35,6 @@
             flex-direction: column;
         }
 
-        /* Layout Principal */
         .app-container {
             display: flex;
             flex: 1;
@@ -45,7 +44,6 @@
             position: relative;
         }
 
-        /* Botão de Menu (Visível no Telemóvel) */
         .mobile-header {
             display: none;
             align-items: center;
@@ -76,7 +74,6 @@
             font-weight: 600;
         }
 
-        /* Fundo escurecido ao abrir o menu no telemóvel */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -89,7 +86,6 @@
             display: block;
         }
 
-        /* Barra Lateral (Painel) */
         .sidebar {
             width: 260px;
             background: var(--glass-bg);
@@ -115,7 +111,6 @@
             border-radius: 4px;
         }
 
-        /* Logo no Topo da Barra Lateral */
         .brand {
             text-align: center;
             padding-bottom: 6px;
@@ -177,7 +172,6 @@
             text-transform: uppercase;
         }
 
-        /* Comandos Rápidos */
         .quick-commands {
             display: flex;
             flex-direction: column;
@@ -208,13 +202,13 @@
             opacity: 0.9;
         }
 
-        /* Status */
         .status-box {
             font-size: 12px;
             display: flex;
             flex-direction: column;
             gap: 5px;
             color: var(--text-muted);
+            word-break: break-word;
         }
         .status-online {
             color: var(--status-green);
@@ -231,7 +225,6 @@
             box-shadow: 0 0 8px var(--status-green);
         }
 
-        /* Controlos */
         .controls-list {
             display: flex;
             flex-direction: column;
@@ -285,7 +278,6 @@
             transform: translateX(16px);
         }
 
-        /* Área Central / Direita */
         .main-stage {
             flex: 1;
             display: flex;
@@ -296,12 +288,12 @@
             min-height: 0;
         }
 
-        /* Caixa de Resposta da IA */
         .response-card {
             width: 100%;
             max-width: 640px;
-            max-height: 32vh;
+            max-height: 36vh;
             overflow-y: auto;
+            white-space: pre-wrap;
             background: var(--glass-card);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
@@ -314,7 +306,6 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(139, 117, 255, 0.08);
         }
 
-        /* Esfera de Energia */
         .core-wrapper {
             display: flex;
             flex-direction: column;
@@ -376,7 +367,6 @@
             color: var(--text-muted);
         }
 
-        /* Barra Inferior de Input */
         .input-bar-container {
             padding: 8px 16px 16px;
             display: flex;
@@ -447,7 +437,6 @@
             50% { transform: scale(1.08); }
         }
 
-        /* Adaptação Mobile: Painel vira Gaveta Retrátil */
         @media (max-width: 768px) {
             .mobile-header {
                 display: flex;
@@ -482,7 +471,6 @@
 </head>
 <body>
 
-    <!-- Cabeçalho Mobile com Botão do Painel -->
     <header class="mobile-header">
         <button class="menu-toggle-btn" onclick="toggleSidebar()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -498,7 +486,6 @@
     <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
 
     <div class="app-container">
-        <!-- Painel Lateral -->
         <aside class="sidebar" id="sidebar">
             <div class="brand">
                 <button class="close-sidebar-btn" onclick="toggleSidebar()">×</button>
@@ -537,8 +524,8 @@
                 <div class="section-title">Status</div>
                 <div class="status-box">
                     <div class="status-online"><span class="status-dot"></span> Online</div>
-                    <div id="latency-display">Latência: 12ms</div>
-                    <div>Modelo: GPT-5 • Ativo</div>
+                    <div id="latency-display">Latência: --</div>
+                    <div>Modelo: {{ modelo | default("openai/gpt-4o-mini") }}</div>
                 </div>
             </div>
 
@@ -561,7 +548,6 @@
             </div>
         </aside>
 
-        <!-- Área Principal -->
         <main class="main-stage">
             <div class="response-card" id="ai-response">
                 Sistema inicializado. Estou pronto para receber os teus comandos.
@@ -576,7 +562,6 @@
         </main>
     </div>
 
-    <!-- Barra de Envio -->
     <div class="input-bar-container">
         <form class="input-form" id="chat-form" onsubmit="enviarMensagem(event)">
             <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -627,27 +612,52 @@
 
             fecharSidebarMobile();
             setEstado(true);
+            responseBox.textContent = "";
             const inicio = performance.now();
+            let primeiroChunk = true;
 
             try {
                 const resposta = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: mensagem, mensagem: mensagem })
+                    body: JSON.stringify({ mensagem })
                 });
 
-                const fim = performance.now();
-                latencyDisplay.textContent = `Latência: ${Math.round(fim - inicio)}ms`;
+                if (!resposta.ok) {
+                    responseBox.textContent = `Erro HTTP ${resposta.status} ao falar com o servidor.`;
+                    return;
+                }
 
-                if (resposta.ok) {
+                const contentType = resposta.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
                     const dados = await resposta.json();
-                    responseBox.textContent = dados.response || dados.resposta || dados.reply || "Comando processado.";
-                } else {
-                    responseBox.textContent = "Erro ao comunicar com o servidor do Gideon.";
+                    latencyDisplay.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
+                    responseBox.textContent = dados.erro || dados.resposta || dados.response || "Resposta recebida.";
+                    return;
+                }
+
+                const reader = resposta.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    if (primeiroChunk) {
+                        latencyDisplay.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
+                        primeiroChunk = false;
+                    }
+
+                    responseBox.textContent += decoder.decode(value, { stream: true });
+                    responseBox.scrollTop = responseBox.scrollHeight;
+                }
+
+                if (!responseBox.textContent.trim()) {
+                    responseBox.textContent = "Sem conteúdo retornado pelo modelo.";
                 }
             } catch (erro) {
                 console.error(erro);
-                responseBox.textContent = "Não foi possível conectar ao backend. Verifica a rota no app.py.";
+                responseBox.textContent = "Não foi possível conectar ao backend.";
             } finally {
                 setEstado(false);
             }
@@ -666,7 +676,7 @@
 
         function resetarSessao() {
             fecharSidebarMobile();
-            responseBox.textContent = "Memória visual limpa. Pronto para um novo comando.";
+            responseBox.textContent = "Tela limpa. Pronto para um novo comando.";
             statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
         }
     </script>

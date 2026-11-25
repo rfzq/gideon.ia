@@ -642,7 +642,7 @@
             </div>
 
             <div class="chat-feed" id="chat-feed">
-            
+
             </div>
         </main>
     </div>
@@ -734,6 +734,35 @@
             return textEl;
         }
 
+        function executarComandoGideon(comando) {
+            if (!comando || typeof comando !== 'object' || !comando.acao) return;
+
+            const acao = String(comando.acao).toLowerCase();
+            const query = comando.query || '';
+            const alvo = String(comando.alvo || '').toLowerCase();
+
+            if (acao === 'tocar_musica') {
+                const q = encodeURIComponent(query);
+                let url = `https://music.youtube.com/search?q=${q}`;
+                if (alvo === 'spotify') {
+                    url = `https://open.spotify.com/search/${q}`;
+                } else if (alvo === 'youtube') {
+                    url = `https://www.youtube.com/results?search_query=${q}`;
+                }
+                window.open(url, '_blank', 'noopener,noreferrer');
+            } else if (acao === 'abrir_url' && query) {
+                try {
+                    const urlObj = new URL(query);
+                    if (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') {
+                        window.open(urlObj.href, '_blank', 'noopener,noreferrer');
+                    }
+                } catch (_) {}
+            } else if (acao === 'buscar_web' && query) {
+                const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        }
+
         async function processarEnvio(mensagem) {
             if (!mensagem || !mensagem.trim()) return;
 
@@ -763,6 +792,7 @@
                     const dados = await resposta.json();
                     if (latencySidebar) latencySidebar.textContent = `Latência: ${Math.round(performance.now() - inicio)}ms`;
                     if (targetText) targetText.textContent = dados.erro || dados.resposta || dados.response || "Resposta recebida.";
+                    if (dados.comando) executarComandoGideon(dados.comando);
                     rolarParaBaixo();
                     return;
                 }

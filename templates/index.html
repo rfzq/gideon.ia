@@ -35,6 +35,7 @@
       div.textContent = text;
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
+      return div;
     }
 
     form.addEventListener('submit', async (e) => {
@@ -44,16 +45,27 @@
       addMsg(text, 'user');
       input.value = '';
 
+      const botDiv = addMsg('...', 'bot');
+
       try {
         const res = await fetch('/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
+          body: JSON.stringify({ mensagem: text })
         });
-        const data = await res.json();
-        addMsg(data.response || data.reply || JSON.stringify(data), 'bot');
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        botDiv.textContent = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          botDiv.textContent += decoder.decode(value, { stream: true });
+          chat.scrollTop = chat.scrollHeight;
+        }
       } catch (err) {
-        addMsg('Erro ao contactar o servidor.', 'bot');
+        botDiv.textContent = 'Erro ao contactar o servidor.';
       }
     });
   </script>

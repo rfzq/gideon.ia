@@ -650,7 +650,7 @@
                             <span>Online</span>
                         </div>
                         <div class="status-meta" id="latency-label">Latência: --</div>
-                        <div class="status-meta" id="model-label">Modelo: {{ model_name or 'Gideon Core' }}</div>
+                        <div class="status-meta" id="model-label">Modelo: {{ modelo or model_name or 'Gideon Core' }}</div>
                     </div>
                 </div>
 
@@ -702,7 +702,7 @@
                             <span>•</span>
                             <span class="online-word" id="state-label">Online</span>
                             <span>•</span>
-                            <span>Modelo: {{ model_name or 'Gideon Core' }}</span>
+                            <span>Modelo: {{ modelo or model_name or 'Gideon Core' }}</span>
                         </div>
                     </div>
                 </div>
@@ -937,6 +937,7 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         session_id: sessionId,
+                        mensagem: texto,
                         message: texto,
                         silent_mode: document.getElementById("silent-mode-toggle").checked
                     })

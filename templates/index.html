@@ -1,385 +1,661 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gideon.ia</title>
-  <style>
-    :root {
-      --bg-main: #09090b;
-      --bg-card: #121216;
-      --border-color: #27272a;
-      --accent-purple: #9d7ff5;
-      --accent-pink: #e879f9;
-      --accent-cyan: #22d3ee;
-      --text-main: #f4f4f5;
-      --text-muted: #a1a1aa;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIDEON.IA // Painel</title>
+    <style>
+        :root {
+            --bg-dark: #07070b;
+            --glass-bg: rgba(22, 23, 34, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --accent-purple: #8b75ff;
+            --accent-blue: #4f8aff;
+            --text-main: #ffffff;
+            --text-muted: #9499b0;
+            --status-green: #38e57d;
+        }
 
-    * {
-      box-sizing: border-box;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg-main);
-      color: var(--text-main);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 65% 45%, rgba(92, 71, 204, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(45, 55, 110, 0.15) 0%, transparent 45%);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-    header {
-      padding: 14px 24px;
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 10;
-    }
+        /* Layout Principal */
+        .app-container {
+            display: flex;
+            flex: 1;
+            padding: 16px;
+            gap: 20px;
+            height: calc(100vh - 80px);
+            position: relative;
+        }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+        /* Barra Lateral (Painel) */
+        .sidebar {
+            width: 240px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
 
-    /* Mini esfera no cabeçalho */
-    .mini-orb {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      position: relative;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), rgba(18,18,22,0.9));
-      box-shadow: 0 0 12px rgba(157, 127, 245, 0.6), inset 0 0 6px rgba(34, 211, 238, 0.8);
-      overflow: hidden;
-    }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
 
-    .mini-orb::before {
-      content: "";
-      position: absolute;
-      inset: -4px;
-      background: conic-gradient(from 0deg, var(--accent-purple), var(--accent-cyan), var(--accent-pink), var(--accent-purple));
-      animation: spin 3s linear infinite;
-      mix-blend-mode: screen;
-      filter: blur(2px);
-    }
+        /* Logo no Topo da Barra Lateral */
+        .brand {
+            text-align: center;
+            padding-bottom: 8px;
+        }
+        .brand-dots {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 6px;
+        }
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #8b75ff;
+            box-shadow: 0 0 8px #8b75ff;
+        }
+        .dot:nth-child(2) {
+            width: 9px;
+            height: 9px;
+            background: #6ea8ff;
+            box-shadow: 0 0 10px #6ea8ff;
+        }
+        .dot:nth-child(3) {
+            background: #a594ff;
+        }
+        .brand h1 {
+            font-size: 11px;
+            letter-spacing: 2px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .brand span {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 2px;
+        }
 
-    .mini-orb.thinking::before {
-      animation: spin 0.7s linear infinite;
-    }
+        /* Secções da Barra Lateral */
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
 
-    .logo {
-      font-weight: 800;
-      font-size: 1.15rem;
-      color: var(--accent-purple);
-      letter-spacing: -0.5px;
-    }
+        /* Comandos Rápidos */
+        .quick-commands {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .cmd-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            color: var(--text-main);
+            padding: 8px 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .cmd-btn:hover {
+            background: rgba(139, 117, 255, 0.15);
+            border-color: rgba(139, 117, 255, 0.3);
+        }
+        .cmd-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            opacity: 0.9;
+        }
 
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.8rem;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      color: var(--text-muted);
-    }
+        /* Status */
+        .status-box {
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            color: var(--text-muted);
+        }
+        .status-online {
+            color: var(--status-green);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background-color: var(--status-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--status-green);
+        }
 
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      background: #22c55e;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #22c55e;
-    }
+        /* Histórico */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .history-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 11px;
+        }
+        .history-item svg {
+            width: 14px;
+            height: 14px;
+            margin-top: 2px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .history-time {
+            color: var(--text-main);
+            font-weight: 600;
+            display: block;
+        }
+        .history-desc {
+            color: var(--text-muted);
+        }
 
-    /* Tela de inicialização / Esfera central */
-    #boot-screen {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      z-index: 5;
-    }
+        /* Controlos (Switches) */
+        .controls-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: auto;
+        }
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 18px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: .3s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--accent-purple);
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
 
-    #boot-screen.hidden {
-      opacity: 0;
-      transform: scale(0.85);
-    }
+        /* Área Central / Direita */
+        .main-stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px 30px;
+            position: relative;
+        }
 
-    .ai-orb {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.25), rgba(15, 12, 41, 0.95) 70%);
-      box-shadow:
-        0 0 40px rgba(157, 127, 245, 0.45),
-        0 0 80px rgba(34, 211, 238, 0.2),
-        inset 0 0 24px rgba(232, 121, 249, 0.6),
-        inset 0 -10px 25px rgba(34, 211, 238, 0.5);
-      animation: bootEntry 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards, floatOrb 4s ease-in-out infinite 0.9s;
-      overflow: hidden;
-    }
+        /* Caixa de Resposta da IA */
+        .response-card {
+            width: 100%;
+            max-width: 560px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 20px 24px;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #e2e4f0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(139, 117, 255, 0.08);
+            align-self: flex-end;
+            margin-right: 2%;
+            transition: all 0.3s ease;
+        }
 
-    /* Ondas de energia internas */
-    .ai-orb .wave {
-      position: absolute;
-      width: 130%;
-      height: 130%;
-      border-radius: 42% 58% 63% 37% / 45% 42% 58% 55%;
-      mix-blend-mode: screen;
-      filter: blur(6px);
-      opacity: 0.85;
-    }
+        /* Esfera de Energia (Núcleo Estilo Siri) */
+        .core-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: auto 0;
+        }
 
-    .ai-orb .wave-1 {
-      background: linear-gradient(135deg, var(--accent-pink), transparent 65%);
-      animation: spin 5s linear infinite;
-    }
+        .energy-orb {
+            width: 210px;
+            height: 210px;
+            border-radius: 50%;
+            position: relative;
+            background: radial-gradient(circle at 35% 35%, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(167, 139, 250, 0.8) 20%, 
+                rgba(99, 102, 241, 0.5) 50%, 
+                rgba(30, 27, 75, 0.8) 85%, 
+                rgba(15, 23, 42, 0.95) 100%);
+            box-shadow: 
+                0 0 40px rgba(139, 117, 255, 0.5),
+                0 0 80px rgba(79, 138, 255, 0.3),
+                inset 0 0 25px rgba(255, 255, 255, 0.6);
+            animation: floatOrb 6s ease-in-out infinite;
+            overflow: hidden;
+        }
 
-    .ai-orb .wave-2 {
-      background: linear-gradient(225deg, var(--accent-cyan), transparent 65%);
-      animation: spinReverse 4s linear infinite;
-    }
+        /* Ondas internas da esfera */
+        .energy-orb::before, .energy-orb::after {
+            content: "";
+            position: absolute;
+            inset: -20%;
+            border-radius: 45%;
+            background: conic-gradient(from 0deg, transparent, rgba(139, 117, 255, 0.6), rgba(96, 165, 250, 0.7), transparent);
+            animation: spinWave 7s linear infinite;
+            mix-blend-mode: screen;
+        }
+        .energy-orb::after {
+            animation: spinWave 10s linear infinite reverse;
+            background: conic-gradient(from 180deg, transparent, rgba(232, 121, 249, 0.5), rgba(56, 189, 248, 0.6), transparent);
+        }
 
-    .ai-orb .wave-3 {
-      background: radial-gradient(circle, #ffffff 0%, var(--accent-purple) 35%, transparent 70%);
-      width: 85%;
-      height: 85%;
-      animation: pulseCore 2.5s ease-in-out infinite;
-    }
+        /* Estado Ativo / A Pensar */
+        .energy-orb.thinking {
+            animation: pulseFast 1.2s ease-in-out infinite;
+            box-shadow: 
+                0 0 60px rgba(139, 117, 255, 0.85),
+                0 0 110px rgba(79, 138, 255, 0.6),
+                inset 0 0 35px rgba(255, 255, 255, 0.9);
+        }
 
-    /* Reflexo de vidro da esfera */
-    .ai-orb::after {
-      content: "";
-      position: absolute;
-      inset: 2px;
-      border-radius: 50%;
-      border-top: 1.5px solid rgba(255, 255, 255, 0.55);
-      border-bottom: 1px solid rgba(34, 211, 238, 0.35);
-      pointer-events: none;
-    }
+        .core-status-text {
+            margin-top: 28px;
+            font-size: 13px;
+            letter-spacing: 3px;
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+        .core-status-text span {
+            color: var(--text-muted);
+        }
 
-    .boot-label {
-      margin-top: 24px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.85rem;
-      letter-spacing: 2px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      animation: fadeText 1.2s ease forwards;
-    }
+        /* Barra Inferior de Input */
+        .input-bar-container {
+            height: 80px;
+            padding: 0 20px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    .boot-label span {
-      color: var(--accent-purple);
-      font-weight: 700;
-    }
+        .input-form {
+            width: 100%;
+            max-width: 900px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 6px 8px 6px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
 
-    @keyframes bootEntry {
-      0% { transform: scale(0.2); opacity: 0; filter: blur(12px); }
-      100% { transform: scale(1); opacity: 1; filter: blur(0); }
-    }
+        .mic-icon {
+            color: var(--text-muted);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .mic-icon:hover {
+            color: var(--text-main);
+        }
 
-    @keyframes floatOrb {
-      0%, 100% { transform: translateY(0px) scale(1); }
-      50% { transform: translateY(-8px) scale(1.03); }
-    }
+        .input-form input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-size: 14px;
+        }
+        .input-form input::placeholder {
+            color: var(--text-muted);
+        }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+        .send-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #9b87ff, #6b5ce7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(139, 117, 255, 0.6);
+        }
 
-    @keyframes spinReverse {
-      0% { transform: rotate(360deg); }
-      100% { transform: rotate(0deg); }
-    }
+        /* Animações */
+        @keyframes spinWave {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.08); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        @keyframes floatOrb {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes pulseFast {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
 
-    @keyframes pulseCore {
-      0%, 100% { transform: scale(0.85); opacity: 0.7; }
-      50% { transform: scale(1.1); opacity: 1; }
-    }
-
-    @keyframes fadeText {
-      0% { opacity: 0; transform: translateY(8px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    #chat {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      z-index: 6;
-    }
-
-    .msg {
-      max-width: 80%;
-      padding: 14px 18px;
-      border-radius: 14px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-      font-size: 0.95rem;
-      animation: fadeText 0.25s ease forwards;
-    }
-
-    .user {
-      align-self: flex-end;
-      background: var(--accent-purple);
-      color: #09090b;
-      font-weight: 500;
-      border-bottom-right-radius: 2px;
-    }
-
-    .bot {
-      align-self: flex-start;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      border-bottom-left-radius: 2px;
-    }
-
-    form {
-      display: flex;
-      gap: 12px;
-      padding: 16px;
-      background: var(--bg-card);
-      border-top: 1px solid var(--border-color);
-      z-index: 10;
-    }
-
-    input {
-      flex: 1;
-      padding: 12px 18px;
-      border-radius: 9999px;
-      border: 1px solid var(--border-color);
-      background: var(--bg-main);
-      color: var(--text-main);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    input:focus {
-      border-color: var(--accent-purple);
-      box-shadow: 0 0 0 2px rgba(157, 127, 245, 0.15);
-    }
-
-    button {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 9999px;
-      background: var(--accent-purple);
-      color: #09090b;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    button:active {
-      transform: scale(0.97);
-    }
-  </style>
+        /* Responsividade para ecrãs menores / telemóvel */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 10px;
+                gap: 12px;
+            }
+            .sidebar {
+                width: 175px;
+                padding: 14px 10px;
+            }
+            .energy-orb {
+                width: 150px;
+                height: 150px;
+            }
+            .response-card {
+                font-size: 13px;
+                padding: 14px 16px;
+                margin-right: 0;
+            }
+            .core-status-text {
+                font-size: 11px;
+                letter-spacing: 2px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <div class="mini-orb" id="mini-orb"></div>
-      <div class="logo">gideon.ia</div>
+
+    <div class="app-container">
+        <!-- Painel Lateral -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <h1>GIDEON.IA</h1>
+                <span>PAINEL</span>
+            </div>
+
+            <div>
+                <div class="section-title">Comandos Rápidos</div>
+                <div class="quick-commands">
+                    <button class="cmd-btn" onclick="enviarComandoRapido('Executar diagnóstico completo do sistema')">
+                        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        Diagnóstico
+                    </button>
+                    <button class="cmd-btn" onclick="resetarSessao()">
+                        <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                        Resetar
+                    </button>
+                    <button class="cmd-btn" onclick="enviarComandoRapido('Faz um resumo da nossa conversa')">
+                        <svg viewBox="0 0 24 24"><path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5z"/></svg>
+                        Resumo
+                    </button>
+                    <button class="cmd-btn" onclick="enviarComandoRapido('Traduz a última resposta para Inglês')">
+                        <svg viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>
+                        Traduzir
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">Status</div>
+                <div class="status-box">
+                    <div class="status-online"><span class="status-dot"></span> Online</div>
+                    <div id="latency-display">Latência: 12ms</div>
+                    <div>Modelo: GPT-5 • Ativo</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">Histórico</div>
+                <div class="history-list" id="history-list">
+                    <div class="history-item">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                        <div>
+                            <span class="history-time">Ontem</span>
+                            <span class="history-desc">Análise concluída</span>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                        <div>
+                            <span class="history-time">Ontem</span>
+                            <span class="history-desc">Tradução PT → EN</span>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                        <div>
+                            <span class="history-time">Seg</span>
+                            <span class="history-desc">Config. sistema</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-list">
+                <div class="section-title" style="margin-bottom: 2px;">Controles</div>
+                <div class="control-row">
+                    <span>Modo Silencioso</span>
+                    <label class="switch">
+                        <input type="checkbox" id="silent-mode" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <span>Notificações</span>
+                    <label class="switch">
+                        <input type="checkbox" id="notifications-mode">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Área Principal -->
+        <main class="main-stage">
+            <div class="response-card" id="ai-response">
+                Sistema inicializado. Estou pronto para receber os teus comandos.
+            </div>
+
+            <div class="core-wrapper">
+                <div class="energy-orb" id="orb"></div>
+                <div class="core-status-text" id="status-label">
+                    GIDEON.IA <span>// PRONTO</span>
+                </div>
+            </div>
+        </main>
     </div>
-    <div class="status">
-      <div class="status-dot"></div>
-      SYS.ONLINE
+
+    <!-- Barra de Envio -->
+    <div class="input-bar-container">
+        <form class="input-form" id="chat-form" onsubmit="enviarMensagem(event)">
+            <svg class="mic-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>
+            </svg>
+            <input type="text" id="user-input" placeholder="Envie um comando para o Gideon..." autocomplete="off" required>
+            <button type="submit" class="send-btn" title="Enviar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+            </button>
+        </form>
     </div>
-  </header>
 
-  <div id="boot-screen">
-    <div class="ai-orb">
-      <div class="wave wave-1"></div>
-      <div class="wave wave-2"></div>
-      <div class="wave wave-3"></div>
-    </div>
-    <div class="boot-label"><span>gideon.ia</span> // pronto</div>
-  </div>
+    <script>
+        const orb = document.getElementById('orb');
+        const statusLabel = document.getElementById('status-label');
+        const responseBox = document.getElementById('ai-response');
+        const userInput = document.getElementById('user-input');
+        const historyList = document.getElementById('history-list');
+        const latencyDisplay = document.getElementById('latency-display');
 
-  <div id="chat"></div>
-
-  <form id="form">
-    <input id="input" type="text" placeholder="Envie um comando para o Gideon..." autocomplete="off" required />
-    <button type="submit">Enviar</button>
-  </form>
-
-  <script>
-    const chat = document.getElementById('chat');
-    const form = document.getElementById('form');
-    const input = document.getElementById('input');
-    const bootScreen = document.getElementById('boot-screen');
-    const miniOrb = document.getElementById('mini-orb');
-
-    function addMsg(text, cls) {
-      const div = document.createElement('div');
-      div.className = 'msg ' + cls;
-      div.textContent = text;
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-      return div;
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = input.value.trim();
-      if (!text) return;
-
-      // Esconde a esfera central na primeira mensagem
-      if (!bootScreen.classList.contains('hidden')) {
-        bootScreen.classList.add('hidden');
-      }
-
-      addMsg(text, 'user');
-      input.value = '';
-
-      const botDiv = addMsg('...', 'bot');
-      miniOrb.classList.add('thinking');
-
-      try {
-        const res = await fetch('/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mensagem: text })
-        });
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        botDiv.textContent = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          botDiv.textContent += decoder.decode(value, { stream: true });
-          chat.scrollTop = chat.scrollHeight;
+        function setEstado(pensando) {
+            if (pensando) {
+                orb.classList.add('thinking');
+                statusLabel.innerHTML = 'GIDEON.IA <span>// PROCESSANDO...</span>';
+            } else {
+                orb.classList.remove('thinking');
+                statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
+            }
         }
-      } catch (err) {
-        botDiv.textContent = 'Erro ao contactar o servidor.';
-      } finally {
-        miniOrb.classList.remove('thinking');
-      }
-    });
-  </script>
+
+        function adicionarHistorico(texto) {
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            const resumo = texto.length > 22 ? texto.substring(0, 22) + '...' : texto;
+            item.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                <div>
+                    <span class="history-time">Agora</span>
+                    <span class="history-desc">${resumo}</span>
+                </div>
+            `;
+            historyList.prepend(item);
+        }
+
+        async function processarEnvio(mensagem) {
+            if (!mensagem.trim()) return;
+
+            setEstado(true);
+            adicionarHistorico(mensagem);
+            const inicio = performance.now();
+
+            try {
+                // Envia para a tua rota no Flask (ajusta '/chat' ou '/perguntar' se o teu app.py usar outro nome)
+                const resposta = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: mensagem, mensagem: mensagem })
+                });
+
+                const fim = performance.now();
+                latencyDisplay.textContent = `Latência: ${Math.round(fim - inicio)}ms`;
+
+                if (resposta.ok) {
+                    const dados = await resposta.json();
+                    responseBox.textContent = dados.response || dados.resposta || dados.reply || "Comando processado.";
+                } else {
+                    responseBox.textContent = "Erro ao comunicar com o servidor do Gideon.";
+                }
+            } catch (erro) {
+                console.error(erro);
+                responseBox.textContent = "Não foi possível conectar ao backend. Verifica se a rota /chat está ativa no app.py.";
+            } finally {
+                setEstado(false);
+            }
+        }
+
+        function enviarMensagem(e) {
+            e.preventDefault();
+            const texto = userInput.value;
+            userInput.value = '';
+            processarEnvio(texto);
+        }
+
+        function enviarComandoRapido(comando) {
+            processarEnvio(comando);
+        }
+
+        function resetarSessao() {
+            responseBox.textContent = "Memória visual limpa. Pronto para um novo comando.";
+            statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
+        }
+    </script>
 </body>
 </html>

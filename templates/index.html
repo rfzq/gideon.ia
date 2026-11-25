@@ -2,15 +2,15 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GIDEON.IA // Painel</title>
     <style>
         :root {
             --bg-dark: #07070b;
-            --glass-bg: rgba(22, 23, 34, 0.65);
+            --glass-bg: rgba(20, 21, 32, 0.88);
+            --glass-card: rgba(25, 27, 42, 0.65);
             --glass-border: rgba(255, 255, 255, 0.12);
             --accent-purple: #8b75ff;
-            --accent-blue: #4f8aff;
             --text-main: #ffffff;
             --text-muted: #9499b0;
             --status-green: #38e57d;
@@ -26,10 +26,10 @@
         body {
             background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(circle at 65% 45%, rgba(92, 71, 204, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(45, 55, 110, 0.15) 0%, transparent 45%);
+                radial-gradient(circle at 50% 45%, rgba(92, 71, 204, 0.18) 0%, transparent 55%),
+                radial-gradient(circle at 80% 85%, rgba(45, 55, 110, 0.15) 0%, transparent 45%);
             color: var(--text-main);
-            height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -41,16 +41,60 @@
             flex: 1;
             padding: 16px;
             gap: 20px;
-            height: calc(100vh - 80px);
+            min-height: 0;
             position: relative;
+        }
+
+        /* Botão de Menu (Visível no Telemóvel) */
+        .mobile-header {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px 0;
+            z-index: 20;
+        }
+
+        .menu-toggle-btn {
+            background: var(--glass-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .header-badge {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Fundo escurecido ao abrir o menu no telemóvel */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 90;
+        }
+        .sidebar-overlay.active {
+            display: block;
         }
 
         /* Barra Lateral (Painel) */
         .sidebar {
-            width: 240px;
+            width: 260px;
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 20px 16px;
@@ -58,22 +102,35 @@
             flex-direction: column;
             gap: 20px;
             overflow-y: auto;
-            z-index: 10;
+            z-index: 100;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 4px;
         }
 
         /* Logo no Topo da Barra Lateral */
         .brand {
             text-align: center;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
+            position: relative;
+        }
+        .close-sidebar-btn {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: -4px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 22px;
+            cursor: pointer;
         }
         .brand-dots {
             display: flex;
@@ -99,10 +156,9 @@
             background: #a594ff;
         }
         .brand h1 {
-            font-size: 11px;
+            font-size: 12px;
             letter-spacing: 2px;
             font-weight: 700;
-            color: var(--text-main);
         }
         .brand span {
             font-size: 11px;
@@ -112,13 +168,12 @@
             margin-top: 2px;
         }
 
-        /* Secções da Barra Lateral */
         .section-title {
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 1.2px;
             color: var(--text-main);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-transform: uppercase;
         }
 
@@ -126,13 +181,13 @@
         .quick-commands {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
         .cmd-btn {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid transparent;
             color: var(--text-main);
-            padding: 8px 10px;
+            padding: 9px 12px;
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -143,8 +198,8 @@
             text-align: left;
         }
         .cmd-btn:hover {
-            background: rgba(139, 117, 255, 0.15);
-            border-color: rgba(139, 117, 255, 0.3);
+            background: rgba(139, 117, 255, 0.18);
+            border-color: rgba(139, 117, 255, 0.35);
         }
         .cmd-btn svg {
             width: 16px;
@@ -158,7 +213,7 @@
             font-size: 12px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 5px;
             color: var(--text-muted);
         }
         .status-online {
@@ -176,39 +231,11 @@
             box-shadow: 0 0 8px var(--status-green);
         }
 
-        /* Histórico */
-        .history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .history-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            font-size: 11px;
-        }
-        .history-item svg {
-            width: 14px;
-            height: 14px;
-            margin-top: 2px;
-            color: var(--text-muted);
-            flex-shrink: 0;
-        }
-        .history-time {
-            color: var(--text-main);
-            font-weight: 600;
-            display: block;
-        }
-        .history-desc {
-            color: var(--text-muted);
-        }
-
-        /* Controlos (Switches) */
+        /* Controlos */
         .controls-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             margin-top: auto;
         }
         .control-row {
@@ -217,7 +244,7 @@
             align-items: center;
             background: rgba(255, 255, 255, 0.05);
             padding: 8px 12px;
-            border-radius: 20px;
+            border-radius: 16px;
             font-size: 12px;
         }
         .switch {
@@ -225,6 +252,7 @@
             display: inline-block;
             width: 34px;
             height: 18px;
+            flex-shrink: 0;
         }
         .switch input {
             opacity: 0;
@@ -264,30 +292,29 @@
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 20px 30px;
-            position: relative;
+            padding: 6px 10px 10px;
+            min-height: 0;
         }
 
         /* Caixa de Resposta da IA */
         .response-card {
             width: 100%;
-            max-width: 560px;
-            background: var(--glass-bg);
+            max-width: 640px;
+            max-height: 32vh;
+            overflow-y: auto;
+            background: var(--glass-card);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: 18px;
-            padding: 20px 24px;
+            padding: 18px 22px;
             font-size: 15px;
-            line-height: 1.5;
-            color: #e2e4f0;
+            line-height: 1.55;
+            color: #e8eaf6;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(139, 117, 255, 0.08);
-            align-self: flex-end;
-            margin-right: 2%;
-            transition: all 0.3s ease;
         }
 
-        /* Esfera de Energia (Núcleo Estilo Siri) */
+        /* Esfera de Energia */
         .core-wrapper {
             display: flex;
             flex-direction: column;
@@ -297,8 +324,8 @@
         }
 
         .energy-orb {
-            width: 210px;
-            height: 210px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             position: relative;
             background: radial-gradient(circle at 35% 35%, 
@@ -315,7 +342,6 @@
             overflow: hidden;
         }
 
-        /* Ondas internas da esfera */
         .energy-orb::before, .energy-orb::after {
             content: "";
             position: absolute;
@@ -330,7 +356,6 @@
             background: conic-gradient(from 180deg, transparent, rgba(232, 121, 249, 0.5), rgba(56, 189, 248, 0.6), transparent);
         }
 
-        /* Estado Ativo / A Pensar */
         .energy-orb.thinking {
             animation: pulseFast 1.2s ease-in-out infinite;
             box-shadow: 
@@ -340,11 +365,12 @@
         }
 
         .core-status-text {
-            margin-top: 28px;
+            margin-top: 22px;
             font-size: 13px;
             letter-spacing: 3px;
             font-weight: 600;
             color: var(--accent-purple);
+            text-align: center;
         }
         .core-status-text span {
             color: var(--text-muted);
@@ -352,24 +378,24 @@
 
         /* Barra Inferior de Input */
         .input-bar-container {
-            height: 80px;
-            padding: 0 20px 16px;
+            padding: 8px 16px 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .input-form {
             width: 100%;
-            max-width: 900px;
-            background: var(--glass-bg);
+            max-width: 720px;
+            background: var(--glass-card);
             backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 30px;
-            padding: 6px 8px 6px 18px;
+            padding: 6px 8px 6px 16px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
         }
 
@@ -377,20 +403,17 @@
             color: var(--text-muted);
             width: 18px;
             height: 18px;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .mic-icon:hover {
-            color: var(--text-main);
+            flex-shrink: 0;
         }
 
         .input-form input {
             flex: 1;
+            min-width: 0;
             background: transparent;
             border: none;
             outline: none;
             color: var(--text-main);
-            font-size: 14px;
+            font-size: 15px;
         }
         .input-form input::placeholder {
             color: var(--text-muted);
@@ -407,14 +430,9 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .send-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(139, 117, 255, 0.6);
+            flex-shrink: 0;
         }
 
-        /* Animações */
         @keyframes spinWave {
             0% { transform: rotate(0deg) scale(1); }
             50% { transform: rotate(180deg) scale(1.08); }
@@ -422,45 +440,68 @@
         }
         @keyframes floatOrb {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
+            50% { transform: translateY(-6px); }
         }
         @keyframes pulseFast {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.08); }
         }
 
-        /* Responsividade para ecrãs menores / telemóvel */
+        /* Adaptação Mobile: Painel vira Gaveta Retrátil */
         @media (max-width: 768px) {
+            .mobile-header {
+                display: flex;
+            }
             .app-container {
-                padding: 10px;
-                gap: 12px;
+                padding: 10px 14px 4px;
             }
             .sidebar {
-                width: 175px;
-                padding: 14px 10px;
+                position: fixed;
+                top: 12px;
+                bottom: 12px;
+                left: 12px;
+                width: 270px;
+                transform: translateX(-115%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .close-sidebar-btn {
+                display: block;
             }
             .energy-orb {
-                width: 150px;
-                height: 150px;
+                width: 175px;
+                height: 175px;
             }
             .response-card {
-                font-size: 13px;
-                padding: 14px 16px;
-                margin-right: 0;
-            }
-            .core-status-text {
-                font-size: 11px;
-                letter-spacing: 2px;
+                font-size: 14px;
+                padding: 15px 18px;
             }
         }
     </style>
 </head>
 <body>
 
+    <!-- Cabeçalho Mobile com Botão do Painel -->
+    <header class="mobile-header">
+        <button class="menu-toggle-btn" onclick="toggleSidebar()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="15" y2="12"></line>
+                <line x1="3" y1="18" x2="18" y2="18"></line>
+            </svg>
+            Painel
+        </button>
+        <span class="header-badge">GIDEON.IA</span>
+    </header>
+
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
     <div class="app-container">
         <!-- Painel Lateral -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="brand">
+                <button class="close-sidebar-btn" onclick="toggleSidebar()">×</button>
                 <div class="brand-dots">
                     <div class="dot"></div>
                     <div class="dot"></div>
@@ -498,33 +539,6 @@
                     <div class="status-online"><span class="status-dot"></span> Online</div>
                     <div id="latency-display">Latência: 12ms</div>
                     <div>Modelo: GPT-5 • Ativo</div>
-                </div>
-            </div>
-
-            <div>
-                <div class="section-title">Histórico</div>
-                <div class="history-list" id="history-list">
-                    <div class="history-item">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <div>
-                            <span class="history-time">Ontem</span>
-                            <span class="history-desc">Análise concluída</span>
-                        </div>
-                    </div>
-                    <div class="history-item">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <div>
-                            <span class="history-time">Ontem</span>
-                            <span class="history-desc">Tradução PT → EN</span>
-                        </div>
-                    </div>
-                    <div class="history-item">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <div>
-                            <span class="history-time">Seg</span>
-                            <span class="history-desc">Config. sistema</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -582,8 +596,21 @@
         const statusLabel = document.getElementById('status-label');
         const responseBox = document.getElementById('ai-response');
         const userInput = document.getElementById('user-input');
-        const historyList = document.getElementById('history-list');
         const latencyDisplay = document.getElementById('latency-display');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function fecharSidebarMobile() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            }
+        }
 
         function setEstado(pensando) {
             if (pensando) {
@@ -595,29 +622,14 @@
             }
         }
 
-        function adicionarHistorico(texto) {
-            const item = document.createElement('div');
-            item.className = 'history-item';
-            const resumo = texto.length > 22 ? texto.substring(0, 22) + '...' : texto;
-            item.innerHTML = `
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                <div>
-                    <span class="history-time">Agora</span>
-                    <span class="history-desc">${resumo}</span>
-                </div>
-            `;
-            historyList.prepend(item);
-        }
-
         async function processarEnvio(mensagem) {
             if (!mensagem.trim()) return;
 
+            fecharSidebarMobile();
             setEstado(true);
-            adicionarHistorico(mensagem);
             const inicio = performance.now();
 
             try {
-                // Envia para a tua rota no Flask (ajusta '/chat' ou '/perguntar' se o teu app.py usar outro nome)
                 const resposta = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -635,7 +647,7 @@
                 }
             } catch (erro) {
                 console.error(erro);
-                responseBox.textContent = "Não foi possível conectar ao backend. Verifica se a rota /chat está ativa no app.py.";
+                responseBox.textContent = "Não foi possível conectar ao backend. Verifica a rota no app.py.";
             } finally {
                 setEstado(false);
             }
@@ -653,6 +665,7 @@
         }
 
         function resetarSessao() {
+            fecharSidebarMobile();
             responseBox.textContent = "Memória visual limpa. Pronto para um novo comando.";
             statusLabel.innerHTML = 'GIDEON.IA <span>// PRONTO</span>';
         }

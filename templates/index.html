@@ -763,6 +763,21 @@
             }
         }
 
+        function extrairEExecutarCmd(texto) {
+            if (!texto) return texto;
+            const match = texto.match(/\[\[CMD:\s*(\{[\s\S]*?\})\s*\]\]/);
+            if (!match) return texto;
+
+            try {
+                const cmdObj = JSON.parse(match[1]);
+                executarComandoGideon(cmdObj);
+            } catch (e) {
+                console.warn("Falha ao ler CMD:", e);
+            }
+
+            return texto.replace(match[0], "").trim();
+        }
+
         async function processarEnvio(mensagem) {
             if (!mensagem || !mensagem.trim()) return;
 
@@ -774,6 +789,7 @@
             const inicio = performance.now();
             let primeiroChunk = true;
             let limpouPlaceholder = false;
+            let bufferTexto = "";
 
             try {
                 const resposta = await fetch('/chat', {
@@ -810,16 +826,18 @@
                     }
 
                     if (!limpouPlaceholder) {
-                        if (targetText) targetText.textContent = "";
                         limpouPlaceholder = true;
                     }
 
-                    if (targetText) targetText.textContent += decoder.decode(value, { stream: true });
+                    bufferTexto += decoder.decode(value, { stream: true });
+                    const textoVisivel = bufferTexto.replace(/\[\[CMD:[\s\S]*$/, "").trim();
+                    if (targetText) targetText.textContent = textoVisivel || "...";
                     rolarParaBaixo();
                 }
 
-                if (targetText && !targetText.textContent.trim()) {
-                    targetText.textContent = "Sem conteúdo retornado pelo modelo.";
+                const textoFinalLimpo = extrairEExecutarCmd(bufferTexto);
+                if (targetText) {
+                    targetText.textContent = textoFinalLimpo || "Sem conteúdo retornado pelo modelo.";
                 }
             } catch (erro) {
                 console.error(erro);

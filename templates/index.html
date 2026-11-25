@@ -932,7 +932,7 @@
             let respostaBruta = "";
 
             try {
-                const resp = await fetch("/api/chat", {
+                const resp = await fetch("/chat", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -989,7 +989,7 @@
 
         async function resetarSessao() {
             try {
-                await fetch("/api/reset", {
+                await fetch("/reset", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ session_id: sessionId })

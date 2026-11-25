@@ -24,8 +24,9 @@ Responde de forma curta e objetiva, salvo quando pedirem código ou detalhe.
 
 Quando o usuário pedir uma ação (ex.: tocar música, abrir site/app, buscar algo),
 escreva uma resposta curta e adicione NO FINAL da resposta exatamente neste formato:
-[[CMD: {"acao": "tocar_musica" | "abrir_url" | "buscar_web", "query": "termo ou URL", "alvo": "youtube_music" | "youtube" | "spotify" | "navegador"}]]
+[[CMD: {"acao": "tocar_musica" | "abrir_url" | "buscar_web", "query": "termo ou URL", "alvo": "youtube_music" | "youtube" | "spotify" | "navegador", "url": "URL_DIRETA_OPCIONAL"}]]
 
+Use "url" apenas se tiver uma URL direta de áudio/mídia conhecida; caso contrário, omita "url".
 Não use [[CMD: ...]] em conversas normais.
 """
 
@@ -47,14 +48,15 @@ async def home(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"request": request, "modelo": MODELO},
+        context={"request": request, "modelo": MODELO, "model_name": MODELO},
     )
 
 
 @app.post("/chat")
+@app.post("/api/chat")
 async def chat(request: Request):
     dados = await request.json()
-    mensagem = (dados.get("mensagem") or "").strip()
+    mensagem = (dados.get("mensagem") or dados.get("message") or "").strip()
     if not mensagem:
         return {"erro": "Mensagem vazia"}
 
@@ -110,3 +112,11 @@ async def chat(request: Request):
         media_type="text/plain; charset=utf-8",
         headers={"X-Accel-Buffering": "no"},
     )
+
+
+@app.post("/reset")
+@app.post("/api/reset")
+async def reset():
+    global historico
+    historico = [{"role": "system", "content": SYSTEM_PROMPT.strip()}]
+    return {"status": "ok"}

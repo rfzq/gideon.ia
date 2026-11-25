@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -20,6 +21,12 @@ SYSTEM_PROMPT = """
 És o Gideon, um assistente direto e prático.
 Foste criado e configurado pelo Rafa.
 Responde de forma curta e objetiva, salvo quando pedirem código ou detalhe.
+
+Quando o usuário pedir uma ação (ex.: tocar música, abrir site/app, buscar algo),
+escreva uma resposta curta e adicione NO FINAL da resposta exatamente neste formato:
+[[CMD: {"acao": "tocar_musica" | "abrir_url" | "buscar_web", "query": "termo ou URL", "alvo": "youtube_music" | "youtube" | "spotify" | "navegador"}]]
+
+Não use [[CMD: ...]] em conversas normais.
 """
 
 historico = [{"role": "system", "content": SYSTEM_PROMPT.strip()}]
@@ -29,6 +36,10 @@ def montar_mensagens():
     if len(historico) <= 1 + MAX_MENSAGENS_HISTORICO:
         return historico
     return [historico[0]] + historico[-MAX_MENSAGENS_HISTORICO:]
+
+
+def limpar_cmd_do_historico(texto: str) -> str:
+    return re.sub(r"\[\[CMD:\s*\{.*?\}\s*\]\]", "", texto, flags=re.DOTALL).strip()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -63,7 +74,7 @@ async def chat(request: Request):
             "model": MODELO,
             "messages": mensagens_envio,
             "stream": True,
-            "max_tokens": 200,
+            "max_tokens": 250,
             "temperature": 0.5,
         }
         try:
@@ -90,7 +101,7 @@ async def chat(request: Request):
                             yield parte
             texto_final = "".join(resposta_completa).strip()
             if texto_final:
-                historico.append({"role": "assistant", "content": texto_final})
+                historico.append({"role": "assistant", "content": limpar_cmd_do_historico(texto_final)})
         except Exception as erro:
             yield f"\n[Erro: {erro}]"
 
